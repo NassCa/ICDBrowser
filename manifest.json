@@ -2,7 +2,7 @@
   "name": "ICD Browser",
   "short_name": "ICD",
   "description": "ICD-10 & ICD-11 Diagnosen Browser",
-  "start_url": "/ICDBrowser/ICDBrowser.html",
+  "start_url": "/ICDBrowser/index.html",
   "scope": "/ICDBrowser/",
   "display": "standalone",
   "background_color": "#f8faf9",
