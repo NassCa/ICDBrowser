@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1b4332">
+<link rel="manifest" href="manifest.json">
+<title>ICD Browser</title>
+<style>
+:root{
+  --p:#2d6a4f;--pd:#1b4332;--pl:#40916c;--ac:#52b788;
+  --bg:#f8faf9;--su:#fff;--s2:#f0f7f4;--bo:#d8eae2;
+  --tx:#1a2e23;--tm:#5a7a67;--tl:#8aab97;
+  --r:12px;--rs:8px;
+  --sh:0 2px 12px rgba(45,106,79,.08);
+  --shm:0 4px 24px rgba(45,106,79,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;padding-bottom:30px}
+header{background:var(--pd);color:#fff;padding:16px 20px 12px;padding-top:calc(16px + env(safe-area-inset-top));position:sticky;top:0;z-index:100;box-shadow:var(--shm)}
+.ht{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.htit{font-size:1.1rem;font-weight:700}
+.hsub{font-size:.71rem;opacity:.6;margin-top:1px}
+.vb{font-size:.62rem;background:rgba(255,255,255,.15);padding:3px 8px;border-radius:20px}
+.sw{position:relative}
+.si{width:100%;padding:9px 14px 9px 38px;border-radius:9px;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:.88rem;outline:none;transition:background .2s}
+.si::placeholder{color:rgba(255,255,255,.45)}
+.si:focus{background:rgba(255,255,255,.2)}
+.sic{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.55}
+.scl{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-size:.95rem;padding:4px;display:none}
+.nav{display:flex;background:var(--su);border-bottom:1px solid var(--bo);overflow-x:auto;scrollbar-width:none;position:sticky;top:calc(78px + env(safe-area-inset-top));z-index:90}
+.nav::-webkit-scrollbar{display:none}
+.nt{flex:1;min-width:70px;padding:10px 6px;border:none;background:none;font-size:.76rem;font-weight:500;color:var(--tm);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.nt.active{color:var(--p);border-bottom-color:var(--p);font-weight:700}
+.main{max-width:960px;margin:0 auto;padding:14px}
+.fb{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.fl{font-size:.72rem;color:var(--tm);font-weight:600;white-space:nowrap}
+.fc{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.chip{padding:3px 10px;border-radius:20px;border:1px solid var(--bo);background:var(--su);font-size:.69rem;cursor:pointer;color:var(--tm);transition:all .15s;font-weight:600}
+.chip:hover{border-color:var(--ac);color:var(--p)}
+.chip.active{background:var(--p);color:#fff;border-color:var(--p)}
+.ri{font-size:.74rem;color:var(--tm);margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+.sb{background:none;border:1px solid var(--bo);border-radius:6px;padding:2px 9px;font-size:.69rem;color:var(--tm);cursor:pointer}
+.dl{display:flex;flex-direction:column;gap:7px}
+.dc{background:var(--su);border-radius:var(--r);border:1px solid var(--bo);box-shadow:var(--sh);overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .15s}
+.dc:hover{box-shadow:var(--shm);transform:translateY(-1px)}
+.dc.ex{border-color:var(--ac)}
+.ch2{display:flex;align-items:flex-start;gap:9px;padding:11px 13px}
+.cb{display:flex;flex-direction:column;gap:3px;min-width:64px}
+.cbd{font-size:.67rem;font-weight:700;padding:2px 6px;border-radius:5px;text-align:center;white-space:nowrap}
+.b10{background:#e8f5ee;color:#2d6a4f;border:1px solid #b7dfc9}
+.b11{background:#eaf4fb;color:#1a5276;border:1px solid #aed6f1}
+.cc{flex:1}
+.ct{font-size:.87rem;font-weight:600;color:var(--tx);margin-bottom:2px;line-height:1.3}
+.cte{font-size:.73rem;color:var(--tm);font-style:italic;margin-bottom:2px}
+.cch{font-size:.67rem;color:var(--tl);display:flex;align-items:center;gap:3px}
+.cdot{width:5px;height:5px;border-radius:50%;background:var(--ac);display:inline-block}
+.ca{font-size:.78rem;color:var(--tl);transition:transform .2s;align-self:center;flex-shrink:0}
+.dc.ex .ca{transform:rotate(180deg)}
+.cdet{display:none;padding:0 13px 12px;border-top:1px solid var(--bo)}
+.dc.ex .cdet{display:block}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+@media(max-width:460px){.dg{grid-template-columns:1fr}}
+.db{background:var(--s2);border-radius:7px;padding:10px;border:1px solid var(--bo)}
+.db.d10{border-left:3px solid #2d6a4f}
+.db.d11{border-left:3px solid #1a5276}
+.dbt{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.db.d10 .dbt{color:#2d6a4f}
+.db.d11 .dbt{color:#1a5276}
+.dr{display:flex;justify-content:space-between;font-size:.74rem;padding:2px 0;border-bottom:1px solid var(--bo);gap:6px}
+.dr:last-child{border-bottom:none}
+.dk{color:var(--tm);flex-shrink:0}
+.dv{font-weight:600;text-align:right;color:var(--tx)}
+.ma{background:var(--s2);border:1px solid var(--bo);border-radius:7px;padding:8px 11px;margin-top:9px;font-size:.74rem;display:flex;align-items:flex-start;gap:7px;flex-wrap:wrap}
+.mai{color:var(--ac);font-weight:700;white-space:nowrap}
+.ss{margin-top:9px}
+.stit{font-size:.68rem;font-weight:700;color:var(--tm);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.stag{display:inline-block;background:#e8f5ee;border:1px solid #b7dfc9;color:#2d6a4f;font-size:.66rem;padding:2px 6px;border-radius:12px;margin:2px 2px 2px 0;font-weight:500}
+.cv{margin-top:7px;background:#fff8e1;border:1px solid #ffe082;border-radius:7px;padding:7px 10px;font-size:.72rem}
+.cvt{font-weight:700;color:#b8860b;margin-bottom:2px;font-size:.66rem;text-transform:uppercase;letter-spacing:.4px}
+.cvc{color:#5d4037;line-height:1.5}
+.icd-version-bar{display:flex;align-items:center;gap:0;background:var(--s2);border:1.5px solid var(--bo);border-radius:100px;padding:3px;margin:0 auto 12px;width:fit-content}
+.icd-ver-btn{padding:5px 20px;border-radius:100px;border:none;font-size:.76rem;font-weight:700;cursor:pointer;transition:.2s;background:none;color:var(--tm);font-family:inherit}
+.icd-ver-btn.on{background:var(--p);color:#fff;box-shadow:0 2px 8px rgba(45,106,79,.25)}
+.icd-search{width:100%;padding:10px 13px;border:2px solid var(--bo);border-radius:var(--r);font-family:inherit;font-size:.88rem;color:var(--tx);background:var(--su);outline:none;transition:border-color .2s;margin-bottom:9px}
+.icd-search:focus{border-color:var(--p)}
+.icd-cats{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.icd-cat-btn{border:1.5px solid var(--bo);background:var(--su);border-radius:100px;padding:4px 11px;font-family:inherit;font-size:.69rem;font-weight:700;cursor:pointer;transition:.18s;color:var(--tm)}
+.icd-cat-btn:hover{border-color:var(--p);color:var(--p)}
+.icd-cat-btn.on{background:var(--p);border-color:var(--p);color:#fff}
+.icd-rc{font-size:.72rem;color:var(--tm);margin-bottom:8px}
+.icd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:9px}
+.icd-card{background:var(--su);border:1px solid var(--bo);border-radius:var(--r);padding:13px;box-shadow:var(--sh);border-left:4px solid var(--p);transition:.15s;cursor:pointer;position:relative}
+.icd-card:hover{transform:translateY(-1px);box-shadow:var(--shm)}
+.icd-card.open{border-left-color:var(--ac)}
+.icd-code{font-size:.69rem;font-weight:800;color:var(--p);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;font-family:monospace}
+.icd-code.v11{color:#1a5276}
+.icd-card.open .icd-code{color:var(--ac)}
+.icd-name{font-size:.87rem;font-weight:700;color:var(--tx);margin-bottom:5px;line-height:1.3}
+.icd-cat-badge{font-size:.66rem;font-weight:700;padding:2px 7px;border-radius:100px;background:var(--s2);color:var(--tm);margin-bottom:5px;display:inline-block}
+.icd-badge-new{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:100px;background:#eaf4fb;color:#1a5276;border:1px solid #aed6f1;margin-left:4px;vertical-align:middle}
+.icd-badge-mod{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:100px;background:#fff8e1;color:#b8860b;border:1px solid #ffe082;margin-left:4px;vertical-align:middle}
+.icd-badge-split{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:100px;background:#fce4ec;color:#c0392b;border:1px solid #f1afc0;margin-left:4px;vertical-align:middle}
+.icd-details{display:none;margin-top:9px;border-top:1px solid var(--bo);padding-top:9px}
+.icd-card.open .icd-details{display:block}
+.icd-detail-row{font-size:.75rem;color:var(--tm);line-height:1.55;margin-bottom:4px}
+.icd-detail-row strong{color:var(--tx);font-weight:700}
+.icd-detail-tags{margin-top:7px}
+.icd-detail-tag{display:inline-block;background:#e8f5ee;border:1px solid #b7dfc9;color:#2d6a4f;font-size:.65rem;padding:2px 6px;border-radius:11px;margin:2px 2px 2px 0;font-weight:500}
+.icd-detail-tag.v11{background:#eaf4fb;border-color:#aed6f1;color:#1a5276}
+.icd-jump{display:inline-block;margin-top:8px;font-size:.71rem;font-weight:700;color:var(--p);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.icd-jump.v11{color:#1a5276}
+.mv{display:none}.mv.active{display:block}
+.tw{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bo);box-shadow:var(--sh)}
+table{width:100%;border-collapse:collapse;font-size:.78rem;background:var(--su)}
+th{background:var(--pd);color:#fff;padding:9px 11px;text-align:left;font-weight:600;font-size:.73rem}
+td{padding:8px 11px;border-bottom:1px solid var(--bo);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--s2)}
+.tc{font-weight:700;font-size:.74rem;white-space:nowrap}
+.t10{color:#2d6a4f}.t11{color:#1a5276}
+.cp{display:inline-block;font-size:.6rem;padding:2px 6px;border-radius:8px;font-weight:600}
+.csame{background:#e8f5ee;color:#2d6a4f}
+.cnew{background:#eaf4fb;color:#1a5276}
+.cmod{background:#fff8e1;color:#b8860b}
+.csplit{background:#fce4ec;color:#c0392b}
+.sv{display:none}.sv.active{display:block}
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:14px}
+@media(min-width:560px){.sg{grid-template-columns:repeat(4,1fr)}}
+.sc{background:var(--su);border-radius:var(--r);border:1px solid var(--bo);padding:13px;text-align:center;box-shadow:var(--sh)}
+.sn{font-size:1.85rem;font-weight:800;color:var(--p);line-height:1;margin-bottom:3px}
+.sl{font-size:.69rem;color:var(--tm);font-weight:500}
+.chl{display:flex;flex-direction:column;gap:7px}
+.ci{background:var(--su);border:1px solid var(--bo);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh)}
+.cn2{background:var(--p);color:#fff;width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.71rem;font-weight:700;flex-shrink:0}
+.cinfo{flex:1}
+.cname{font-size:.81rem;font-weight:600;color:var(--tx);margin-bottom:1px}
+.crange{font-size:.67rem;color:var(--tm)}
+.ccount{font-size:.74rem;font-weight:700;color:var(--p);text-align:right}
+.ccount small{display:block;font-size:.6rem;font-weight:400;color:var(--tl)}
+.sh2{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tm);margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--bo)}
+.es{text-align:center;padding:44px 20px;color:var(--tm)}
+.ei{font-size:1.8rem;margin-bottom:8px;opacity:.3}
+mark{background:#fef08a;color:var(--tx);border-radius:2px;padding:0 1px}
+.stb{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));right:15px;background:var(--p);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:.95rem;cursor:pointer;box-shadow:var(--shm);display:none;align-items:center;justify-content:center;z-index:200}
+.stb.vis{display:flex}
+.verif{font-size:.59rem;opacity:.35;text-align:center;padding:16px 0 6px;color:var(--tm)}
+</style>
+</head>
+<body>
+<header>
+  <div class="ht">
+    <div><div class="htit">ICD Browser</div><div class="hsub">ICD-10 &amp; ICD-11 · F00–F99 · v2.3</div></div>
+    <span class="vb">verifiziert</span>
+  </div>
+  <div class="sw">
+    <svg class="sic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" class="si" id="si" placeholder="Code, Bezeichnung oder Symptom…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="scl" id="scl" onclick="clrS()">✕</button>
+  </div>
+</header>
+
+<div class="nav">
+  <button class="nt active" id="nt0" onclick="showTab('d')">Diagnosen</button>
+  <button class="nt" id="nt1" onclick="showTab('k')">ICD-Karten</button>
+  <button class="nt" id="nt2" onclick="showTab('m')">Mapping</button>
+  <button class="nt" id="nt3" onclick="showTab('s')">Kapitel</button>
+</div>
+
+<div class="main" id="tb-d">
+  <div class="fb"><span class="fl">Kapitel:</span><div class="fc" id="chips"></div></div>
+  <div class="ri"><span id="rc"></span><button class="sb" onclick="togSort()">A–Z / Code</button></div>
+  <div class="dl" id="dl"></div>
+</div>
+
+<div class="main mv" id="tb-k">
+  <div class="icd-version-bar">
+    <button class="icd-ver-btn on" id="vb10" onclick="setIcdVer(10,this)">ICD-10</button>
+    <button class="icd-ver-btn" id="vb11" onclick="setIcdVer(11,this)">ICD-11</button>
+  </div>
+  <input type="text" class="icd-search" id="ics" placeholder="Code oder Bezeichnung suchen…" oninput="renderIcdCards()">
+  <div class="icd-cats" id="icd-cats"></div>
+  <div class="icd-rc" id="icd-rc"></div>
+  <div class="icd-grid" id="icd-grid"></div>
+</div>
+
+<div class="main mv" id="tb-m">
+  <div class="sh2">ICD-10 → ICD-11 Mapping — 120 Diagnosen, verifizierte Codes</div>
+  <div class="tw"><table><thead><tr><th>ICD-10</th><th>ICD-11</th><th>Bezeichnung</th><th>Veränderung</th></tr></thead><tbody id="mb"></tbody></table></div>
+</div>
+
+<div class="main sv" id="tb-s">
+  <div class="sg" id="sg"></div>
+  <div class="sh2">Kapitelübersicht ICD-10 F-Achse</div>
+  <div class="chl" id="chl"></div>
+</div>
+
+<button class="stb" id="stb" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+var D=[
+{c10:"F00",c11:"6D80",de:"Demenz bei Alzheimer-Krankheit",en:"Dementia in Alzheimer disease",ch:"F0",chn:"Organische Störungen",sy:["Gedächtnisverlust für neue Informationen","Zeitliche Desorientierung","Örtliche Desorientierung","Sprachstörung (Aphasie)","Handlungsunfähigkeit (Apraxie)","Agnosie","Persönlichkeitsveränderung","Urteilsvermögen eingeschränkt","Schleichender Beginn","Progredienter Verlauf"],chg:"mod",cn:"ICD-11: 6D80, Alzheimer-Subtypen differenziert"},
+{c10:"F01",c11:"6D81",de:"Vaskuläre Demenz",en:"Vascular dementia",ch:"F0",chn:"Organische Störungen",sy:["Stufenweiser Verlauf","Fokale neurologische Zeichen","Gedächtnisminderung","Emotionale Labilität","Antriebsminderung","Hypertonie in der Vorgeschichte","Apoplexie in der Anamnese","Fluktuierende Symptomatik","Nächtliche Verwirrtheit"],chg:"same",cn:"Weitgehend unverändert"},
+{c10:"F02",c11:"6D85",de:"Demenz bei anderen Krankheiten",en:"Dementia due to other diseases",ch:"F0",chn:"Organische Störungen",sy:["Demenz-Symptomatik","Bekannte Grunderkrankung (z.B. Parkinson, HIV, Pick)","Kognitive Beeinträchtigung","Verhaltensänderungen","Persönlichkeitsveränderung"],chg:"mod",cn:"ICD-11: 6D85 fasst Pick, CJD, Parkinson, HIV zusammen"},
+{c10:"F03",c11:"6D8Z",de:"Nicht näher bezeichnete Demenz",en:"Dementia unspecified",ch:"F0",chn:"Organische Störungen",sy:["Kognitive Beeinträchtigung","Gedächtnisverlust","Ursache unklar","Alltagsbeeinträchtigung","Persönlichkeitsveränderung"],chg:"mod",cn:"Restklasse ICD-11"},
+{c10:"F04",c11:"6D71",de:"Organisches amnestisches Syndrom",en:"Amnestic disorder",ch:"F0",chn:"Organische Störungen",sy:["Schwere anterograde Amnesie","Retrograde Amnesie","Kein Delir","Konfabulation","Zeitgitterstörung","Intaktes Kurzzeitgedächtnis möglich","Organische Ursache"],chg:"mod",cn:"ICD-11: 6D71"},
+{c10:"F05",c11:"6D70",de:"Delir",en:"Delirium",ch:"F0",chn:"Organische Störungen",sy:["Bewusstseinseintrübung","Aufmerksamkeitsstörung","Zeitliche Desorientierung","Örtliche Desorientierung","Psychomotorische Unruhe oder Verlangsamung","Halluzinationen (v.a. optisch)","Akuter Beginn","Fluktuierender Verlauf","Schlafinversion","Affektlabilität","Vegetative Symptome"],chg:"mod",cn:"ICD-11: eigene Kategorie 6D70"},
+{c10:"F06",c11:"6E6Y",de:"Andere psych. Störungen durch Hirnschädigung",en:"Other mental disorders due to brain damage",ch:"F0",chn:"Organische Störungen",sy:["Halluzinationen bei klarem Bewusstsein","Organische Angststörung","Organische affektive Störung","Organische Wahnstörung","Organische Persönlichkeitsstörung","Nachweisbare Hirnschädigung"],chg:"mod",cn:"ICD-11: auf mehrere Sektionen verteilt"},
+{c10:"F07",c11:"6D90",de:"Persönlichkeitsstörung durch Hirnschädigung",en:"Personality disorder due to brain damage",ch:"F0",chn:"Organische Störungen",sy:["Frontalhirnsyndrom","Affektlabilität","Impulskontrollstörung","Apathie oder Enthemmung","Persönlichkeitsveränderung nach Hirnschädigung","Vermindertes Urteilsvermögen","Sozialer Rückzug"],chg:"mod",cn:"ICD-11: 6D90"},
+{c10:"F09",c11:"6E8Z",de:"NNB organische psychische Störung",en:"Unspecified organic mental disorder",ch:"F0",chn:"Organische Störungen",sy:["Psychotische Symptome","Organische Ursache","Nicht anderweitig klassifizierbar"],chg:"mod",cn:"Restklasse ICD-11: 6E8Z"},
+{c10:"F10.0",c11:"6C40.0",de:"Akute Alkoholintoxikation",en:"Alcohol intoxication",ch:"F1",chn:"Sucht & Substanzen",sy:["Koordinationsstörung","Dysarthrie","Enthemmung","Euphorie oder Dysphorie","Verlangsamte Reaktionszeit","Aufmerksamkeitsstörung","Gedächtnislücken (Blackouts)","Nystagmus","Rötung des Gesichts"],chg:"same",cn:"Unverändert"},
+{c10:"F10.1",c11:"6C40.1",de:"Schädlicher Alkoholgebrauch",en:"Harmful use of alcohol",ch:"F1",chn:"Sucht & Substanzen",sy:["Nachweisliche körperliche Schäden (z.B. Leberschädigung)","Psychische Schäden (z.B. depressive Episode)","Kein Abhängigkeitssyndrom","Konsum trotz Kenntnis der Schäden","Mind. 1 Monat anhaltend"],chg:"same",cn:"Konzept beibehalten"},
+{c10:"F10.2",c11:"6C40.2",de:"Alkoholabhängigkeit",en:"Alcohol dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Starkes Verlangen (Craving)","Kontrollverlust über Menge und Beginn","Körperliches Entzugssyndrom","Toleranzentwicklung","Vernachlässigung anderer Interessen","Konsum trotz schädlicher Folgen","Mind. 3 Kriterien in 12 Monaten"],chg:"same",cn:"Kriterien weitgehend identisch"},
+{c10:"F10.3",c11:"6C40.3",de:"Alkoholentzugssyndrom",en:"Alcohol withdrawal",ch:"F1",chn:"Sucht & Substanzen",sy:["Tremor der Hände","Schwitzen","Übelkeit/Erbrechen","Tachykardie","Hypertonie","Angst und Unruhe","Schlafstörungen","Zerebrale Krampfanfälle möglich","Delirium tremens möglich"],chg:"same",cn:"Unverändert"},
+{c10:"F11.2",c11:"6C43.2",de:"Opioidabhängigkeit",en:"Opioid dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Starkes Verlangen (Craving)","Toleranzentwicklung","Schweres Entzugssyndrom (Schmerzen, Schwitzen, Durchfall)","Kontrollverlust","Vernachlässigung sozialer Verpflichtungen","Beschäftigung mit Beschaffung"],chg:"same",cn:"Kriterien identisch"},
+{c10:"F12.2",c11:"6C41.2",de:"Cannabisabhängigkeit",en:"Cannabis dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Craving","Toleranzentwicklung","Kontrollverlust","Soziale Einschränkungen","Entzug: Reizbarkeit, Schlafstörung, Appetitminderung","Konsum trotz psychischer Schäden"],chg:"same",cn:"Unverändert"},
+{c10:"F13.2",c11:"6C42.2",de:"Benzodiazepin-Abhängigkeit",en:"Sedative dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Toleranzentwicklung","Entzugssymptome (Angst, Zittern, Krampfanfälle)","Kontrollverlust","Craving","Konsum trotz Kenntnis der Schäden","Funktionseinschränkungen"],chg:"same",cn:"Unverändert"},
+{c10:"F14.2",c11:"6C44.2",de:"Kokainabhängigkeit",en:"Cocaine dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Craving","Kontrollverlust","Dysphorie nach Konsum (Crash)","Schlafstörungen","Depressive Verstimmung","Sozialer Rückzug","Beschaffungskriminalität möglich"],chg:"same",cn:"Unverändert"},
+{c10:"F15.2",c11:"6C45.2",de:"Stimulanzienabhängigkeit",en:"Stimulant dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Craving","Toleranz","Crash-Symptomatik nach Absetzen","Schlafstörungen","Gewichtsverlust","Paranoia bei Intoxikation möglich"],chg:"same",cn:"Unverändert"},
+{c10:"F16.2",c11:"6C46.2",de:"Halluzinogenabhängigkeit",en:"Hallucinogen dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Craving","Flashbacks (HPPD)","Wahrnehmungsveränderungen","Persönlichkeitsveränderungen","Psychotische Episoden möglich"],chg:"same",cn:"Unverändert"},
+{c10:"F17.2",c11:"6C4A.2",de:"Tabakabhängigkeit",en:"Nicotine dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Craving","Entzugssymptome (Reizbarkeit, Konzentrationsstörung, Gewichtszunahme)","Toleranz","Konsum morgens kurz nach Aufwachen","Misslungene Aufhörversuche","Konsum trotz Gesundheitsschäden"],chg:"mod",cn:"ICD-11: 6C4A, Nikotin präzisiert"},
+{c10:"F18.2",c11:"6C47.2",de:"Abhängigkeit von flüchtigen Lösungsmitteln",en:"Volatile inhalant dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Inhalation von Lösungsmitteln/Klebstoffen","Toleranzentwicklung","Entzugssymptome","Neurologische Schäden","Kontrollverlust"],chg:"same",cn:"Unverändert"},
+{c10:"F19.2",c11:"6C4H.2",de:"Polytoxikomanie",en:"Multiple substance dependence",ch:"F1",chn:"Sucht & Substanzen",sy:["Gleichzeitiger Konsum mehrerer Substanzen","Craving für mehrere Substanzen","Komplexe Entzugssyndrome","Kontrollverlust","Sozialer Verfall"],chg:"mod",cn:"ICD-11: 6C4H Restklasse"},
+{c10:"F20.0",c11:"6A20",de:"Paranoide Schizophrenie",en:"Schizophrenia",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Wahnerleben (v.a. Verfolgungswahn)","Akustische Halluzinationen (kommentierende/dialogisierende Stimmen)","Ich-Störungen (Gedankeneingebung, -entzug, -ausbreitung)","Formale Denkstörungen","Negativsymptome (Affektverflachung, Alogie, Abulie)","Mind. 1 Monat Symptome","Funktionseinschränkung"],chg:"mod",cn:"ICD-11: alle Subtypen unter 6A20"},
+{c10:"F20.1",c11:"6A20",de:"Hebephrene Schizophrenie",en:"Schizophrenia (disorganised)",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Desorganisiertes Denken und Sprechen","Affektverflachung oder inadäquater Affekt","Desorganisiertes Verhalten","Beginn im Jugendalter","Fragmentarische Wahnideen","Soziale Isolation"],chg:"split",cn:"Subtyp aufgelöst, Desorganisations-Spezifizierer"},
+{c10:"F20.2",c11:"6A20",de:"Katatone Schizophrenie",en:"Schizophrenia (catatonic)",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Stupor","Katalepsie (wächserne Biegsamkeit)","Mutismus","Negativismus","Raptus (plötzliche Erregung)","Stereotypien","Echolalie/Echopraxie","Haltungsverharren"],chg:"split",cn:"Katatonie auch als 6A41 kodierbar"},
+{c10:"F20.5",c11:"6A20",de:"Schizophrenes Residuum",en:"Schizophrenia (residual)",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Ausgeprägte Negativsymptome","Antriebsmangel","Affektverflachung","Sozialer Rückzug","Verminderte Sprache (Alogie)","Vorausgegangene psychotische Episode","Chronischer Verlauf"],chg:"split",cn:"Als Verlaufsspezifizierer"},
+{c10:"F21",c11:"6A22",de:"Schizotype Störung",en:"Schizotypal disorder",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Exzentrisches Verhalten und Erscheinungsbild","Magisches Denken","Ungewöhnliche Wahrnehmungserlebnisse","Quasi-psychotische Episoden","Misstrauische Ideen","Soziale Isolation","Eingeschränkter Affekt","Mind. 2 Jahre"],chg:"same",cn:"ICD-11: 6A22, unverändert"},
+{c10:"F22",c11:"6A24",de:"Anhaltende wahnhafte Störung",en:"Delusional disorder",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Gut systematisierter Wahn","Keine Halluzinationen (oder minimal)","Klares Bewusstsein","Erhaltene Persönlichkeit","Häufige Wahninhalte: Verfolgung, Eifersucht, Größe, Liebeswahn","Mind. 3 Monate"],chg:"same",cn:"Weitgehend unverändert"},
+{c10:"F23",c11:"6A23",de:"Akute vorübergehende psychotische Störung",en:"Acute and transient psychotic disorder",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Akuter Beginn (innerhalb 2 Wochen)","Polymorphe wechselnde Symptome","Halluzinationen","Wahnideen","Verwirrung und Ratlosigkeit","Emotionale Turbulenzen","Vollständige Remission innerhalb 3 Monate"],chg:"same",cn:"Unverändert"},
+{c10:"F24",c11:"6A24.0",de:"Induzierte wahnhafte Störung",en:"Induced delusional disorder",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Folie à deux (geteilter Wahn)","Enger emotionaler Kontakt zu Wahnkrankem","Gleiche Wahninhalte","Remission bei Trennung möglich"],chg:"mod",cn:"Als Subtyp der wahnhaften Störung"},
+{c10:"F25",c11:"6A21",de:"Schizoaffektive Störung",en:"Schizoaffective disorder",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Gleichzeitig psychotische und affektive Symptome","Halluzinationen und Wahn","Manische oder depressive Episode","Symptome nicht zeitlich getrennt","Deutliche Funktionseinschränkung"],chg:"same",cn:"ICD-11: 6A21, Konzept beibehalten"},
+{c10:"F28",c11:"6A2Y",de:"Sonstige nichtorganische psychotische Störungen",en:"Other primary psychotic disorder",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Psychotische Symptome","Nicht klassifizierbar als Schizophrenie oder affektive Störung"],chg:"mod",cn:"Restklasse 6A2Y"},
+{c10:"F29",c11:"6A2Z",de:"NNB nichtorganische Psychose",en:"Unspecified primary psychotic disorder",ch:"F2",chn:"Schizophrenie & Psychosen",sy:["Psychotische Symptome","Keine ausreichende Information zur Einordnung"],chg:"mod",cn:"Restklasse 6A2Z"},
+{c10:"F30",c11:"6A60.3",de:"Manische Episode",en:"Manic episode",ch:"F3",chn:"Affektive Störungen",sy:["Gehobene oder gereizte Stimmung","Gesteigerte Energie und Aktivität","Vermindertes Schlafbedürfnis","Ideenflucht oder Gedankenrasen","Größenideen oder Selbstüberschätzung","Rücksichtsloses Verhalten","Gesteigerte Libido","Erhöhte Gesprächigkeit","Mind. 1 Woche"],chg:"mod",cn:"ICD-11: unter Bipolare-I 6A60"},
+{c10:"F31.0",c11:"6A60.0",de:"Bipolare Störung, hypomane Episode",en:"Bipolar I, current hypomanic",ch:"F3",chn:"Affektive Störungen",sy:["Gehobene Stimmung (weniger ausgeprägt als Manie)","Gesteigerte Energie","Verminderte Schlafdauer","Gesteigerte Aktivität","Kein Funktionsverlust","Mind. 4 Tage"],chg:"mod",cn:"Bipolar I und II explizit unterschieden"},
+{c10:"F31.1",c11:"6A60.1",de:"Bipolare Störung, manische Episode",en:"Bipolar I, current manic",ch:"F3",chn:"Affektive Störungen",sy:["Euphorie oder Dysphorie","Grandiosität","Risikobereitschaft (Geldausgaben, Sexualität)","Vermindertes Schlafbedürfnis","Ideenflucht","Psychotische Symptome möglich","Hospitalisierung häufig erforderlich"],chg:"mod",cn:"Spezifizierungen ausgebaut"},
+{c10:"F31.3",c11:"6A60.4",de:"Bipolare Störung, leichte depressive Episode",en:"Bipolar I, current mild depressive",ch:"F3",chn:"Affektive Störungen",sy:["Gedrückte Stimmung","Antriebsminderung","Freudlosigkeit","Schlafstörungen","Konzentrationsstörung","Bei Bipolarer Störung"],chg:"mod",cn:"Differenziertere Spezifizierung"},
+{c10:"F31.5",c11:"6A61",de:"Bipolare-II-Störung",en:"Bipolar II disorder",ch:"F3",chn:"Affektive Störungen",sy:["Mind. eine hypomane Episode","Mind. eine depressive Episode","Keine vollständige manische Episode","Funktionsbeeinträchtigung","Häufige depressive Phasen"],chg:"new",cn:"ICD-11: erstmals eigene Diagnose 6A61"},
+{c10:"F32.0",c11:"6A70.0",de:"Leichte depressive Episode",en:"Depressive episode, mild",ch:"F3",chn:"Affektive Störungen",sy:["Gedrückte Stimmung","Antriebsminderung","Interessenverlust/Freudlosigkeit","Erhöhte Ermüdbarkeit","Schlafstörungen","Verminderte Konzentration","Vermindertes Selbstwertgefühl","Mind. 2 Wochen","2 von 3 Kernsymptomen"],chg:"mod",cn:"ICD-11 trennt Einzel- von rezidivierender Episode"},
+{c10:"F32.1",c11:"6A70.1",de:"Mittelgradige depressive Episode",en:"Depressive episode, moderate",ch:"F3",chn:"Affektive Störungen",sy:["Gedrückte Stimmung","Antriebsminderung","Interessenverlust","Schlafstörungen","Konzentrationsstörungen","Suizidgedanken","Schuldgefühle","Psychomotorische Verlangsamung oder Agitiertheit","Verminderter Appetit","Mind. 4 Nebensymptome"],chg:"mod",cn:"Neue strukturierte Schweregradunterteilung"},
+{c10:"F32.2",c11:"6A70.2",de:"Schwere depressive Episode ohne Psychose",en:"Depressive episode, severe without psychosis",ch:"F3",chn:"Affektive Störungen",sy:["Suizidalität (akute Gefährdung)","Psychomotorische Hemmung oder starke Agitiertheit","Alle 3 Kernsymptome","Selbstversorgung eingeschränkt","Soziale Isolation","Hoffnungslosigkeit","Wertlosigkeitsgefühle"],chg:"mod",cn:"ICD-11: 6A70.2"},
+{c10:"F32.3",c11:"6A70.3",de:"Schwere depressive Episode mit Psychose",en:"Depressive episode, severe with psychosis",ch:"F3",chn:"Affektive Störungen",sy:["Schwere Depressionssymptomatik","Schuldwahn","Verarmungswahn","Nihilistischer Wahn","Halluzinationen (stimmungskongruent)","Akute Suizidalität","Stupor möglich"],chg:"mod",cn:"ICD-11: 6A70.3"},
+{c10:"F33.0",c11:"6A71.0",de:"Rezidiv. depressive Störung, leicht",en:"Recurrent depressive disorder, mild",ch:"F3",chn:"Affektive Störungen",sy:["Wiederkehrende depressive Episoden","Mind. 2 Episoden","Beschwerdefreie Intervalle","Aktuell leichte Episode","Keine manischen Episoden in der Vorgeschichte"],chg:"new",cn:"ICD-11: klar von Einzelepisode getrennt"},
+{c10:"F33.1",c11:"6A71.1",de:"Rezidiv. depressive Störung, mittelgradig",en:"Recurrent depressive disorder, moderate",ch:"F3",chn:"Affektive Störungen",sy:["Rezidivierende Depressionen","Aktuell mittelgradige Episode","Häufig saisonale Häufung","Suizidrisiko erhöht"],chg:"same",cn:"Konzept beibehalten"},
+{c10:"F33.2",c11:"6A71.2",de:"Rezidiv. depressive Störung, schwer",en:"Recurrent depressive disorder, severe",ch:"F3",chn:"Affektive Störungen",sy:["Schwere rezidivierende Depressionen","Hohes Suizidrisiko","Hospitalisierung oft erforderlich","Psychotische Merkmale möglich","Ausgeprägte Funktionseinschränkung"],chg:"same",cn:"Unverändert"},
+{c10:"F34.0",c11:"6A62",de:"Zyklothymia",en:"Cyclothymia",ch:"F3",chn:"Affektive Störungen",sy:["Chronische Stimmungsinstabilität","Phasen leichter Hochstimmung","Phasen leichter Niedergeschlagenheit","Mind. 2 Jahre","Keine manische oder depressive Episode","Kein beschwerdefreies Intervall > 2 Monate"],chg:"same",cn:"Unverändert"},
+{c10:"F34.1",c11:"6A72",de:"Dysthymie",en:"Dysthymia",ch:"F3",chn:"Affektive Störungen",sy:["Chronisch gedrückte Stimmung","Mind. 2 Jahre","Antriebsmangel","Schlafstörungen","Vermindertes Selbstwertgefühl","Konzentrationsstörung","Hoffnungslosigkeit","Selten symptomfreie Intervalle > 2 Monate"],chg:"mod",cn:"ICD-11: Persistierende depressive Störung 6A72"},
+{c10:"F38",c11:"6A7Y",de:"Andere affektive Störungen",en:"Other mood disorders",ch:"F3",chn:"Affektive Störungen",sy:["Affektive Symptomatik","Nicht klassifizierbar"],chg:"mod",cn:"Restklasse 6A7Y"},
+{c10:"F40.0",c11:"6B00",de:"Agoraphobie",en:"Agoraphobia",ch:"F4",chn:"Angst & Stress",sy:["Angst an Orten ohne Fluchtmöglichkeit","Menschenmengen","Öffentliche Verkehrsmittel","Weite offene Plätze","Allein außer Haus","Vermeidungsverhalten","Panikattacken möglich","Antizipationsangst","Deutliche Funktionseinschränkung"],chg:"mod",cn:"ICD-11: 6B00, von Panikstörung getrennt"},
+{c10:"F40.1",c11:"6B04",de:"Soziale Phobie",en:"Social anxiety disorder",ch:"F4",chn:"Angst & Stress",sy:["Angst vor Beobachtung und Beurteilung","Errötungsangst","Zittern vor anderen","Sprechangst","Essen in der Öffentlichkeit","Vermeidung sozialer Situationen","Antizipationsangst","Körperliche Angstsymptome","Leidensdruck"],chg:"mod",cn:"ICD-11: 6B04, Soziale Angststörung"},
+{c10:"F40.2",c11:"6B03",de:"Spezifische Phobie",en:"Specific phobia",ch:"F4",chn:"Angst & Stress",sy:["Ausgeprägte Angst vor spezifischem Objekt/Situation","Unmittelbare Angstreaktion","Vermeidungsverhalten","Antizipationsangst","Irrationale Angst, die als übertrieben erkannt wird","Häufige Typen: Tiere, Blut, Spritzen, Höhe, Enge"],chg:"same",cn:"ICD-11: 6B03, unverändert"},
+{c10:"F41.0",c11:"6B01",de:"Panikstörung",en:"Panic disorder",ch:"F4",chn:"Angst & Stress",sy:["Rekurrente Panikattacken","Palpitationen/Herzrasen","Brustschmerz","Schwindel","Atemnot","Taubheitsgefühle","Hitzewallungen oder Kälteschauer","Derealisation/Depersonalisation","Todesangst","Erwartungsangst vor neuen Attacken","Mind. 1 Monat Besorgnis"],chg:"mod",cn:"ICD-11: 6B01, nicht mehr mit Agoraphobie kombiniert"},
+{c10:"F41.1",c11:"6B00.0",de:"Generalisierte Angststörung",en:"Generalised anxiety disorder",ch:"F4",chn:"Angst & Stress",sy:["Persistierende generalisierte Angst","Unkontrollierbare Sorgen","Motorische Anspannung (Zittern, Spannungskopfschmerz)","Vegetative Übererregtheit","Schreckhaftigkeit","Schlafstörungen","Konzentrationsstörung","Reizbarkeit","Mind. 6 Monate"],chg:"same",cn:"ICD-11: 6B00.0"},
+{c10:"F41.2",c11:"6B0Y",de:"Angst und depressive Störung, gemischt",en:"Mixed anxiety and depressive disorder",ch:"F4",chn:"Angst & Stress",sy:["Gleichzeitig Angst und depressive Symptome","Subklinisch (keines ausreichend für Einzeldiagnose)","Dysphorie","Schlafstörungen","Konzentrationsstörung","Sorgen"],chg:"mod",cn:"ICD-11: 6B0Y, keine eigenständige Hauptdiagnose"},
+{c10:"F42",c11:"6B20",de:"Zwangsstörung",en:"Obsessive-compulsive disorder",ch:"F4",chn:"Angst & Stress",sy:["Zwangsgedanken (ego-dyston, aufdringlich)","Zwangshandlungen (Rituale zur Angstreduktion)","Mind. 1 Stunde täglich","Deutlicher Leidensdruck","Kontaminationsangst","Kontroll- und Ordnungszwänge","Symmetriezwänge","Erkenntnis der Unsinnigkeit"],chg:"new",cn:"ICD-11: eigenes Kapitel Zwangsspektrum 6B20"},
+{c10:"F43.0",c11:"6B40",de:"Akute Belastungsreaktion",en:"Acute stress reaction",ch:"F4",chn:"Angst & Stress",sy:["Unmittelbar nach außergewöhnlichem Stressor","Dissoziation","Betäubungsgefühl","Desorientiertheit","Agitiertheit oder Rückzug","Beginnt innerhalb Stunden","Klingt innerhalb Tagen ab"],chg:"mod",cn:"ICD-11: kein eigenständiger Diagnosestatus"},
+{c10:"F43.1",c11:"6B40",de:"Posttraumatische Belastungsstörung",en:"PTSD",ch:"F4",chn:"Angst & Stress",sy:["Intrusionen (Flashbacks, Alpträume)","Vermeidung traumabezogener Reize","Hypervigilanz und Schreckhaftigkeit","Schlafstörungen","Emotionale Taubheit","Negatives Selbstbild","Anhaltend negative Emotionen","Gedächtnislücken für das Trauma","Mind. 1 Monat nach Trauma"],chg:"mod",cn:"ICD-11: PTBS 6B40 + komplexe PTBS 6B41 neu"},
+{c10:"F43.2",c11:"6B43",de:"Anpassungsstörung",en:"Adjustment disorder",ch:"F4",chn:"Angst & Stress",sy:["Reaktion auf identifizierbaren Stressor","Emotionale Beeinträchtigung","Verhaltensänderungen","Beginn innerhalb 1 Monat nach Stressor","Dauer < 6 Monate (außer Dauerbelastung)","Depressive Symptome","Angst","Anpassungsprobleme"],chg:"mod",cn:"ICD-11: 6B43"},
+{c10:"F44",c11:"6B60",de:"Dissoziative Störungen",en:"Dissociative disorders",ch:"F4",chn:"Angst & Stress",sy:["Dissoziativer Gedächtnisverlust","Dissoziativer Stupor","Dissoziative Krampfanfälle","Dissoziativer Fugue-Zustand","Identitätsstörung (DIS)","Depersonalisation","Derealisation","Sensorische Ausfälle ohne organ. Befund"],chg:"mod",cn:"ICD-11: eigenes Kapitel 6B60ff"},
+{c10:"F45",c11:"6C20",de:"Somatoforme Störungen",en:"Bodily distress disorder",ch:"F4",chn:"Angst & Stress",sy:["Körperliche Beschwerden ohne ausreichende organische Ursache","Anhaltende Sorge um Beschwerden","Häufige Arztbesuche","Schmerzen","Magen-Darm-Beschwerden","Kardiovaskuläre Beschwerden","Leidensdruck","Mind. mehrere Monate"],chg:"mod",cn:"ICD-11: Bodily distress disorder 6C20"},
+{c10:"F48.0",c11:"6C20.Z",de:"Neurasthenie",en:"Neurasthenia",ch:"F4",chn:"Angst & Stress",sy:["Geistige Erschöpfbarkeit","Körperliche Schwäche","Gesteigerte Ermüdbarkeit","Schlafstörungen","Konzentrationsstörungen","Reizbarkeit","Muskuläre Schmerzen"],chg:"mod",cn:"ICD-11: nicht mehr eigenständig"},
+{c10:"F48.1",c11:"6B65",de:"Depersonalisations-/Derealisationssyndrom",en:"Depersonalisation-derealisation disorder",ch:"F4",chn:"Angst & Stress",sy:["Gefühl der Unwirklichkeit der eigenen Person","Umgebung erscheint fremd/unwirklich","Intaktes Realitätsbewusstsein (kein Wahn)","Emotionale Taubheit","Verzerrte Körperwahrnehmung","Anhaltend oder rezidivierend","Leidensdruck"],chg:"mod",cn:"ICD-11: 6B65"},
+{c10:"F50.0",c11:"6B80",de:"Anorexia nervosa",en:"Anorexia nervosa",ch:"F5",chn:"Essstörungen & Körper",sy:["Restriktives Essverhalten","Gewicht unterhalb Normalbereich","Intensive Angst vor Gewichtszunahme","Körperschemastörung","Amenorrhoe möglich","Hyperaktivität","Kalteempfindlichkeit","Haarausfall","Bradykardie","Selbst herbeigeführtes Erbrechen möglich"],chg:"mod",cn:"ICD-11: 6B80, BMI-Kriterium flexibler"},
+{c10:"F50.1",c11:"6B80.1",de:"Atypische Anorexia nervosa",en:"Atypical anorexia nervosa",ch:"F5",chn:"Essstörungen & Körper",sy:["Anorexia-Symptome vorhanden","BMI noch nicht stark erniedrigt","Körperschemastörung","Restriktives Verhalten","Gewichtsangst"],chg:"mod",cn:"Als Spezifizierer"},
+{c10:"F50.2",c11:"6B81",de:"Bulimia nervosa",en:"Bulimia nervosa",ch:"F5",chn:"Essstörungen & Körper",sy:["Wiederholte Heißhungerattacken (Binge)","Kompensationsverhalten (Erbrechen, Laxanzien, Fasten, Sport)","Kontrollverlust beim Essen","Mind. 1× pro Woche über 3 Monate","Übermäßige Beschäftigung mit Körpergewicht","Normales oder erhöhtes Gewicht","Zahnschäden durch Erbrechen"],chg:"same",cn:"Unverändert"},
+{c10:"F50.4",c11:"6B82",de:"Binge-Eating-Störung",en:"Binge eating disorder",ch:"F5",chn:"Essstörungen & Körper",sy:["Unkontrollierte Essanfälle","Kein Kompensationsverhalten","Schnelles Essen bis zum Unwohlsein","Essen ohne Hunger","Scham nach Essanfall","Mind. 1× pro Woche über 3 Monate","Häufig Übergewicht"],chg:"new",cn:"ICD-11: neu als eigenständige Diagnose 6B82"},
+{c10:"F51.0",c11:"7A00",de:"Nichtorganische Insomnie",en:"Insomnia disorder",ch:"F5",chn:"Essstörungen & Körper",sy:["Einschlafstörung","Durchschlafstörung","Früherwachen","Nicht erholsamer Schlaf","Tagesmüdigkeit","Konzentrationsstörung","Reizbarkeit tagsüber","Mind. 3× pro Woche über 3 Monate","Keine organische Ursache"],chg:"new",cn:"ICD-11: Schlafkapitel 7A00"},
+{c10:"F51.3",c11:"7B01",de:"Schlafwandeln",en:"Sleepwalking",ch:"F5",chn:"Essstörungen & Körper",sy:["Aufstehen und Umhergehen im Schlaf","Tiefschlafphase (erste Nachthälfte)","Keine Erinnerung","Schwererweckbar","Stereotype Bewegungen","Keine Reaktion auf Kommunikation","Häufig in Kindheit"],chg:"new",cn:"ICD-11: Parasomnien 7B01"},
+{c10:"F52.0",c11:"HA00",de:"Mangel an sexuellem Verlangen",en:"Hypoactive sexual desire dysfunction",ch:"F5",chn:"Essstörungen & Körper",sy:["Anhaltend vermindertes sexuelles Verlangen","Fehlende sexuelle Fantasien","Leidensdruck","Mind. 6 Monate","Nicht durch andere Störung erklärbar"],chg:"new",cn:"ICD-11: Sexuelle Dysfunktionen HA00"},
+{c10:"F53",c11:"6E20",de:"Psychische Störungen im Wochenbett",en:"Mental disorders associated with childbirth",ch:"F5",chn:"Essstörungen & Körper",sy:["Beginn innerhalb 6 Wochen nach Geburt","Postpartale Depression","Anhedonie","Antriebslosigkeit","Schlafstörungen","Postpartale Psychose möglich","Wahnideen (z.B. Kind betreffend)","Baby-Blues (transient)"],chg:"mod",cn:"ICD-11: perinatale psychische Störungen 6E20"},
+{c10:"F60.0",c11:"6D10.1",de:"Paranoide Persönlichkeitsstörung",en:"Paranoid personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Tiefgreifendes Misstrauen","Verdacht auf Ausbeutung oder Schädigung","Ungerechtfertigte Eifersucht","Empfindlichkeit gegenüber Kränkungen","Nachtragen von Beleidigungen","Feindseligkeit","Starres Festhalten an eigenen Rechten","Beginn im frühen Erwachsenenalter"],chg:"mod",cn:"ICD-11: dimensionale Klassifikation"},
+{c10:"F60.1",c11:"6D10.0",de:"Schizoide Persönlichkeitsstörung",en:"Schizoid personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Emotionale Kälte und Distanziertheit","Wenig Freude an Aktivitäten","Geringe Empfindlichkeit für Lob/Kritik","Kein Interesse an engen Beziehungen","Soziale Isolation","Fehlende Empathie","Vorliebe für Solitäraktivitäten","Gleichgültigkeit gegenüber sozialen Normen"],chg:"mod",cn:"Dimensionaler Spezifizierer"},
+{c10:"F60.2",c11:"6D10.2",de:"Dissoziale Persönlichkeitsstörung",en:"Antisocial personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Missachtung sozialer Normen und Rechte anderer","Aggressivität und Reizbarkeit","Impulsivität","Verantwortungslosigkeit","Fehlendes Schuldbewusstsein","Unfähigkeit zur Aufrechterhaltung von Beziehungen","Delinquenz","Lügen und Manipulieren"],chg:"mod",cn:"Als Spezifizierer"},
+{c10:"F60.3",c11:"6D11.5",de:"Emotional instabile PS – Borderline",en:"Borderline personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Affektinstabilität (intensive episodische Dysphorie)","Impulsivität in selbstschädigenden Bereichen","Instabile intensive Beziehungen (Idealisierung/Entwertung)","Identitätsstörung","Suizidversuche oder Selbstverletzung","Chronische Leere","Intense unangemessene Wut","Vorübergehende Paranoia oder Dissoziation","Intensive Angst vor Verlassenwerden"],chg:"mod",cn:"ICD-11: Borderline-Muster 6D11.5"},
+{c10:"F60.4",c11:"6D10.4",de:"Histrionische Persönlichkeitsstörung",en:"Histrionic personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Dramatisches Verhalten","Ständiges Suchen nach Aufmerksamkeit","Rasch wechselnde oberflächliche Emotionen","Suggestibilität","Übertriebene Körperlichkeit","Unangemessen verführerisches Verhalten","Übertriebene Ausdrucksweise"],chg:"mod",cn:"Als Spezifizierer"},
+{c10:"F60.5",c11:"6D10.5",de:"Anankastische Persönlichkeitsstörung",en:"Obsessive-compulsive personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Perfektionismus (hindert Fertigstellung)","Rigidität und Sturheit","Übermäßige Gewissenhaftigkeit","Ordnungsliebe und Regelorientiertheit","Unfähigkeit zu delegieren","Geiz","Aufgabenbezogene Übergewissenhaftigkeit","Keine Zwangsgedanken (Abgrenzung zu F42)"],chg:"mod",cn:"Zwanghaftes Muster"},
+{c10:"F60.6",c11:"6D10.6",de:"Ängstliche Persönlichkeitsstörung",en:"Avoidant personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Soziale Hemmung","Minderwertigkeitsgefühle","Überempfindlichkeit gegenüber negativer Bewertung","Vermeidung sozialer Aktivitäten","Scheu vor neuen Beziehungen ohne Garantie der Akzeptanz","Eingeschränkter Lebensstil","Angst vor Blamage"],chg:"same",cn:"Beibehalten"},
+{c10:"F60.7",c11:"6D10.7",de:"Abhängige Persönlichkeitsstörung",en:"Dependent personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Unterwürfigkeit","Klammerndes Verhalten","Unfähigkeit zu selbständigen Entscheidungen","Angst vor Verlassen-werden","Suche nach Fürsorge","Schwierigkeiten allein zu sein","Dringendes Suchen neuer Beziehung nach Trennung","Übernehmen unangenehmer Aufgaben"],chg:"same",cn:"Unverändert"},
+{c10:"F60.8",c11:"6D10.Y",de:"Sonstige spezifische Persönlichkeitsstörungen",en:"Other specific personality disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Narzissmus (Grandiosität, Empathiemangel)","Passiv-Aggressivität","Depressive Persönlichkeit"],chg:"mod",cn:"Sonstige Spezifizierer"},
+{c10:"F61",c11:"6D10.Z",de:"Kombinierte Persönlichkeitsstörungen",en:"Combined personality disorders",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Merkmale mehrerer PS-Typen","Kein einzelner Typ dominierend","Tiefgreifende Funktionsstörung"],chg:"mod",cn:"Dimensional erfasst"},
+{c10:"F62",c11:"6D11.Z",de:"Andauernde Persönlichkeitsänderung",en:"Enduring personality change",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Nach extremer Belastung (KZ, Folter, Katastrophe)","Feindliche oder misstrauische Haltung","Sozialer Rückzug","Leere- und Hoffnungslosigkeitsgefühle","Chronisches Entfremdungsgefühl","Dauerhaft veränderte Persönlichkeit"],chg:"mod",cn:"In komplexes PTBS-Konzept integriert"},
+{c10:"F63.0",c11:"6C50",de:"Pathologisches Spielen",en:"Gambling disorder",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Kontrollverlust über Spielverhalten","Craving","Priorität des Spielens trotz negativer Folgen","Eskalation des Einsatzes","Lügen über Ausmaß","Vernachlässigung sozialer Verpflichtungen","Finanzielle Ruinierung"],chg:"new",cn:"ICD-11: Verhaltenssucht 6C50"},
+{c10:"F63.1",c11:"6C70",de:"Pathologisches Brandstiften (Pyromanie)",en:"Pyromania",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Impulskontrollverlust beim Feuerlegen","Faszination für Feuer","Spannungsaufbau vor der Tat","Befriedigung/Erleichterung danach","Kein materielles Motiv"],chg:"mod",cn:"ICD-11: 6C70"},
+{c10:"F63.2",c11:"6C71",de:"Pathologisches Stehlen (Kleptomanie)",en:"Kleptomania",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Impulskontrollverlust beim Stehlen","Stehlen ohne persönlichen Nutzen oder Motiv","Spannungsaufbau vor der Tat","Erleichterung/Befriedigung danach","Schuldgefühle möglich"],chg:"mod",cn:"ICD-11: 6C71"},
+{c10:"F63.3",c11:"6B25",de:"Trichotillomanie",en:"Trichotillomania",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Zwanghaftes Ausreißen eigener Haare","Haarverlust sichtbar","Spannungsaufbau vor dem Ausreißen","Erleichterung danach","Leidensdruck","Schamgefühle","Versuche aufzuhören scheitern"],chg:"new",cn:"ICD-11: Zwangsspektrum 6B25"},
+{c10:"F64.0",c11:"HA60",de:"Geschlechtsinkongruenz",en:"Gender incongruence",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Starke Inkongruenz zwischen erlebtem und zugewiesenem Geschlecht","Wunsch nach Transition","Leidensdruck durch Inkongruenz","Wunsch nach Körpermerkmalen des anderen Geschlechts","Ablehnung der eigenen Geschlechtsmerkmale"],chg:"new",cn:"ICD-11: aus psych. Störungen entfernt → Sexuelle Gesundheit HA60"},
+{c10:"F65",c11:"6D30",de:"Störungen der Sexualpräferenz (Paraphilien)",en:"Paraphilic disorders",ch:"F6",chn:"Persönlichkeitsstörungen",sy:["Intensive paraphile sexuelle Präferenz","Leidensdruck für Betroffene","Oder Fremdgefährdung (z.B. Pädophilie, Exhibitionismus)","Anhaltend über mind. 6 Monate"],chg:"mod",cn:"ICD-11: 6D30ff nur bei Leidensdruck"},
+{c10:"F70",c11:"6A00.0",de:"Leichte Intelligenzminderung",en:"Mild intellectual developmental disorder",ch:"F7",chn:"Intelligenzmind.",sy:["IQ 50–69","Verlangsamtes Lernen","Einfache praktische Arbeiten möglich","Soziale Beziehungen möglich","Schwierigkeiten in Schule","Sprachentwicklungsverzögerung","Adaptive Funktionsstörung"],chg:"mod",cn:"ICD-11: Intellektuelle Entwicklungsstörung 6A00.0"},
+{c10:"F71",c11:"6A00.1",de:"Mittelgradige Intelligenzminderung",en:"Moderate intellectual developmental disorder",ch:"F7",chn:"Intelligenzmind.",sy:["IQ 35–49","Grundschulniveau mit Förderung möglich","Einfache Arbeiten mit Begleitung","Eingeschränkte Sprache","Dauernde Betreuung nötig"],chg:"mod",cn:"Neue Bezeichnung"},
+{c10:"F72",c11:"6A00.2",de:"Schwere Intelligenzminderung",en:"Severe intellectual developmental disorder",ch:"F7",chn:"Intelligenzmind.",sy:["IQ 20–34","Minimale Sprachentwicklung","Umfassende Pflege erforderlich","Motorische Einschränkungen häufig","Weitgehende Abhängigkeit"],chg:"mod",cn:"Neue Bezeichnung"},
+{c10:"F73",c11:"6A00.3",de:"Schwerste Intelligenzminderung",en:"Profound intellectual developmental disorder",ch:"F7",chn:"Intelligenzmind.",sy:["IQ unter 20","Kaum oder keine Sprache","Vollständige Pflegebedürftigkeit","Schwere motorische Einschränkungen","Häufig neurologische Komorbiditäten"],chg:"mod",cn:"Neue Bezeichnung"},
+{c10:"F78",c11:"6A00.Y",de:"Andere Intelligenzminderung",en:"Other intellectual developmental disorder",ch:"F7",chn:"Intelligenzmind.",sy:["Intelligenzminderung","Zusätzliche körperliche/sensorische Einschränkungen"],chg:"mod",cn:"Restklasse"},
+{c10:"F79",c11:"6A00.Z",de:"NNB Intelligenzminderung",en:"Unspecified intellectual developmental disorder",ch:"F7",chn:"Intelligenzmind.",sy:["Intelligenzminderung","Keine nähere Einordnung möglich"],chg:"mod",cn:"Restklasse"},
+{c10:"F80.0",c11:"6A01.0",de:"Artikulationsstörung",en:"Developmental speech sound disorder",ch:"F8",chn:"Entwicklungsstörungen",sy:["Fehlartikulationen","Altersinkonsistente Aussprache","Lautsubstitutionen","Verständlichkeitsprobleme","Kein organischer Befund"],chg:"mod",cn:"ICD-11: 6A01"},
+{c10:"F80.1",c11:"6A01.1",de:"Expressive Sprachstörung",en:"Developmental language disorder, expressive",ch:"F8",chn:"Entwicklungsstörungen",sy:["Eingeschränkter aktiver Wortschatz","Kurze einfache Sätze","Grammatikfehler","Sprachproduktion beeinträchtigt","Sprachverständnis normal","Frustration durch Kommunikationsprobleme"],chg:"mod",cn:"ICD-11: 6A01"},
+{c10:"F80.2",c11:"6A01.2",de:"Rezeptive Sprachstörung",en:"Developmental language disorder, receptive",ch:"F8",chn:"Entwicklungsstörungen",sy:["Gestörtes Sprachverständnis","Langsame Verarbeitung gesprochener Sprache","Expressive Sprache ebenfalls beeinträchtigt","Folgen einfacher Anweisungen schwierig"],chg:"mod",cn:"ICD-11: 6A01"},
+{c10:"F81.0",c11:"6A03.0",de:"Lese-Rechtschreibstörung",en:"Developmental dyslexia",ch:"F8",chn:"Entwicklungsstörungen",sy:["Leseschwierigkeiten","Langsames Lesen","Rechtschreibfehler (phonologisch)","Schlechtes Buchstaben-Laut-Zuordnen","Trotz normaler Intelligenz","Trotz ausreichendem Unterricht","Häufige Buchstabendrehungen"],chg:"mod",cn:"ICD-11: Developmental learning disorder 6A03"},
+{c10:"F81.2",c11:"6A03.1",de:"Rechenstörung (Dyskalkulie)",en:"Developmental dyscalculia",ch:"F8",chn:"Entwicklungsstörungen",sy:["Schwierigkeiten mit Grundrechenarten","Schlechtes Zahlenverständnis","Probleme mit Mengenvorstellung","Trotz normaler Intelligenz","Kein organischer Befund"],chg:"mod",cn:"ICD-11: 6A03"},
+{c10:"F82",c11:"6A04",de:"Entwicklungsstörung der Motorik",en:"Developmental coordination disorder",ch:"F8",chn:"Entwicklungsstörungen",sy:["Motorische Ungeschicklichkeit","Verlangsamte oder ungenaue Bewegungen","Koordinationsprobleme","Beeinträchtigung schulischer/Alltagsaktivitäten","Nicht durch neurologische Erkrankung erklärbar"],chg:"mod",cn:"ICD-11: DCD 6A04"},
+{c10:"F84.0",c11:"6A02",de:"Frühkindlicher Autismus",en:"Autism spectrum disorder",ch:"F8",chn:"Entwicklungsstörungen",sy:["Beeinträchtigung sozialer Interaktion","Beeinträchtigung Kommunikation (verbal/nonverbal)","Stereotyp repetitives Verhalten","Eingeschränkte Interessen","Beginn vor dem 3. Lebensjahr","Blickkontaktvermeidung","Rituale und Routinen","Sensorische Über-/Unterempfindlichkeit"],chg:"mod",cn:"ICD-11: alle Subtypen unter ASS 6A02"},
+{c10:"F84.2",c11:"6A02",de:"Rett-Syndrom",en:"Rett syndrome",ch:"F8",chn:"Entwicklungsstörungen",sy:["Ausschließlich Mädchen (MECP2-Mutation)","Normale Entwicklung bis 6–18 Monate","Verlust gezielter Handbewegungen","Händewringen (Stereotypie)","Schwere intellektuelle Behinderung","Gangstörungen","Anfälle"],chg:"split",cn:"ICD-11: nicht mehr unter psych. Störungen"},
+{c10:"F84.5",c11:"6A02",de:"Asperger-Syndrom",en:"Autism spectrum disorder",ch:"F8",chn:"Entwicklungsstörungen",sy:["Soziale Interaktionsstörung","Eingeschränkte Interessen (Spezialthemen)","Stereotype Verhaltensweisen","Normale Sprachentwicklung","Normale Intelligenz","Motorische Ungeschicklichkeit möglich","Mangel an Empathie"],chg:"split",cn:"ICD-11: in ASS 6A02 integriert"},
+{c10:"F90.0",c11:"6A05.0",de:"ADHS – Aufmerksamkeitstyp",en:"ADHD, predominantly inattentive",ch:"F9",chn:"Kinder & Jugend",sy:["Unaufmerksamkeit","Ablenkbarkeit","Vergesslichkeit","Desorganisation","Verlust von Gegenständen","Anweisungen werden nicht zu Ende verfolgt","Aufgaben werden nicht abgeschlossen","Mind. 6 Monate","In mind. 2 Settings"],chg:"mod",cn:"ICD-11: ADHS Aufmerksamkeitsdefizit 6A05.0"},
+{c10:"F90.1",c11:"6A05.1",de:"ADHS – kombinierter Typ",en:"ADHD, combined presentation",ch:"F9",chn:"Kinder & Jugend",sy:["Unaufmerksamkeit","Hyperaktivität (ständige Bewegung, Zappeln)","Impulsivität (platzt heraus, kann nicht warten)","Laufen/Klettern in unpassenden Situationen","Redet übermäßig","Beginn vor dem 12. Lebensjahr","Funktionsbeeinträchtigung in Schule und Alltag"],chg:"mod",cn:"ICD-11: ADHS gemischt 6A05.1"},
+{c10:"F90.8",c11:"6A05.2",de:"ADHS – vorwiegend hyperaktiver Typ",en:"ADHD, predominantly hyperactive",ch:"F9",chn:"Kinder & Jugend",sy:["Hyperaktivität dominierend","Impulsivität","Weniger Aufmerksamkeitsprobleme","Häufiger bei jüngeren Kindern"],chg:"mod",cn:"ICD-11: 6A05.2"},
+{c10:"F91.0",c11:"6C90.0",de:"Störung des Sozialverhaltens",en:"Conduct-dissocial disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Aggressives Verhalten gegenüber Personen/Tieren","Zerstörung von Eigentum","Lügen und Stehlen","Schuleschwänzen","Weglaufen von Zuhause","Verstoß gegen altersgemäße Normen","Mind. 12 Monate"],chg:"mod",cn:"ICD-11: 6C90"},
+{c10:"F91.3",c11:"6C90.1",de:"Oppositionelle Verhaltensstörung",en:"Oppositional defiant disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Aufsässiges trotziges Verhalten","Reizbarkeit","Streitsüchtigkeit","Absichtliches Ärgern anderer","Übermäßige Ablehnung von Autorität","Rachsucht","Mind. 6 Monate","Hauptsächlich gegenüber Bezugspersonen"],chg:"mod",cn:"ICD-11: 6C90.1"},
+{c10:"F92",c11:"6C90.2",de:"Kombinierte Störung des Sozialverhaltens",en:"Combined conduct and emotional disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Sozialverhaltensstörung","Gleichzeitig emotionale Symptome (Angst, Depression)","Beeinträchtigung in mehreren Lebensbereichen"],chg:"mod",cn:"ICD-11: 6C90.2"},
+{c10:"F93.0",c11:"6B05",de:"Emotionale Störung mit Trennungsangst",en:"Separation anxiety disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Übermäßige Angst vor Trennung von Bezugspersonen","Schulvermeidung","Albträume über Trennung","Körperliche Beschwerden bei Trennung","Sorge über Unfälle mit Bezugspersonen","Anhänglichkeit","Mind. 4 Wochen"],chg:"mod",cn:"ICD-11: 6B05, nicht mehr auf Kinder beschränkt"},
+{c10:"F93.1",c11:"6B03",de:"Phobische Störung des Kindesalters",en:"Childhood phobic anxiety disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Altersspezifische Phobien (Dunkelheit, Gewitter)","Ausgeprägte Angst","Altersgemäß zunächst normal","Vermeidungsverhalten","Leidensdruck"],chg:"mod",cn:"ICD-11: unter spezifische Phobie 6B03"},
+{c10:"F94.0",c11:"6B06",de:"Selektiver Mutismus",en:"Selective mutism",ch:"F9",chn:"Kinder & Jugend",sy:["Sprechen nur in bestimmten Situationen (z.B. Zuhause)","Schweigen in sozialen Situationen (z.B. Schule)","Ausreichende Sprachkompetenz vorhanden","Mind. 1 Monat","Sozialer Rückzug","Häufig mit sozialer Angst kombiniert"],chg:"mod",cn:"ICD-11: 6B06"},
+{c10:"F94.1",c11:"6B44",de:"Reaktive Bindungsstörung",en:"Reactive attachment disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Emotionale Rückgezogenheit","Wenig Suchen von Trost","Eingeschränkte positive Affektivität","Irritabilität ohne Erklärung","Vorgeschichte schwerer Vernachlässigung","Beginn vor 5. Lebensjahr","Kein Autismus"],chg:"mod",cn:"ICD-11: 6B44"},
+{c10:"F95.0",c11:"8A05.0",de:"Vorübergehende Ticstörung",en:"Provisional tic disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Motorische oder vokale Tics","Plötzlich, schnell, wiederkehrend, nicht rhythmisch","Dauer unter 12 Monaten","Beginn vor dem 18. Lebensjahr","Exazerbation bei Stress"],chg:"new",cn:"ICD-11: 8A05.0 (neurologisch)"},
+{c10:"F95.1",c11:"8A05.1",de:"Chronische Ticstörung",en:"Chronic tic disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Persistierende motorische ODER vokale Tics","Mind. 12 Monate","Kein ticfreies Intervall > 3 Monate","Beginn vor dem 18. Lebensjahr"],chg:"new",cn:"ICD-11: 8A05.1"},
+{c10:"F95.2",c11:"8A05.00",de:"Tourette-Syndrom",en:"Tourette syndrome",ch:"F9",chn:"Kinder & Jugend",sy:["Multiple motorische Tics","Mind. ein vokaler Tic","Nicht notwendigerweise gleichzeitig","Mind. 12 Monate","Beginn vor dem 18. Lebensjahr","Koprolalie (ca. 10%)","Echolalie","OCD und ADHS häufig komorbid"],chg:"new",cn:"ICD-11: 8A05.00"},
+{c10:"F98.0",c11:"6C00",de:"Nichtorganische Enuresis",en:"Enuresis",ch:"F9",chn:"Kinder & Jugend",sy:["Einnässen nach dem 5. Lebensjahr","Nächtlich (Enuresis nocturna) häufiger","Tagsüber (Enuresis diurna) möglich","Mind. 2× pro Monat über 3 Monate","Keine organische Ursache","Kein Zusammenhang mit psychotropen Substanzen"],chg:"same",cn:"Unverändert"},
+{c10:"F98.1",c11:"6C01",de:"Nichtorganische Enkoprese",en:"Encopresis",ch:"F9",chn:"Kinder & Jugend",sy:["Einkoten nach dem 4. Lebensjahr","Mind. 1× pro Monat über 3 Monate","Keine organische Ursache","Unwillkürlich oder gelegentlich willkürlich","Sekundäre Form nach Kontinenz möglich"],chg:"same",cn:"Unverändert"},
+{c10:"F98.4",c11:"6C0Y",de:"Stereotype Bewegungsstörungen",en:"Stereotyped movement disorder",ch:"F9",chn:"Kinder & Jugend",sy:["Wiederholende ziellose Bewegungen (Schaukeln, Händeflatttern)","Nicht durch andere Störung erklärbar","Funktionsbeeinträchtigung oder Selbstverletzung","Keine Tics"],chg:"mod",cn:"ICD-11: 6C0Y"},
+{c10:"F98.5",c11:"6A03.Y",de:"Stottern",en:"Stuttering",ch:"F9",chn:"Kinder & Jugend",sy:["Unterbrechungen im Sprachfluss","Wiederholungen von Lauten/Silben","Dehnungen","Blockierungen","Begleitbewegungen möglich","Leidensdruck","Vermeidungsverhalten"],chg:"mod",cn:"ICD-11: 6A03.Y"},
+{c10:"F99",c11:"6E8Z",de:"Psychische Störung ohne nähere Angabe",en:"Mental disorder NOS",ch:"F9",chn:"Kinder & Jugend",sy:["Psychische Störung vorhanden","Nicht anderweitig klassifizierbar"],chg:"mod",cn:"Restklasse 6E8Z"}
+];
+
+var curTab="d",icdVer=10,ach="all",icdCat="all",sAZ=true,exId=null,openIcdId=null;
+
+function init(){
+  buildChips();renderDiagnosen();renderMapping();renderStatistik();buildIcdCats();renderIcdCards();
+  document.getElementById("si").addEventListener("input",function(){
+    document.getElementById("scl").style.display=this.value?"block":"none";
+    if(curTab==="d")renderDiagnosen();
+    else if(curTab==="k")renderIcdCards();
+  });
+}
+
+function showTab(t){
+  curTab=t;
+  ["d","k","m","s"].forEach(function(x,i){
+    document.getElementById("nt"+i).classList.toggle("active",x===t);
+    var el=document.getElementById("tb-"+x);
+    if(x==="d")el.style.display=t==="d"?"block":"none";
+    else el.classList.toggle("active",x===t);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function clrS(){
+  document.getElementById("si").value="";
+  document.getElementById("scl").style.display="none";
+  if(curTab==="d")renderDiagnosen();
+  else if(curTab==="k")renderIcdCards();
+}
+
+function escRx(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
+function hl(t,q){if(!q)return t;try{return t.replace(new RegExp(escRx(q),"gi"),function(m){return"<mark>"+m+"</mark>";});}catch(e){return t;}}
+function lbl(c){return{same:"Unverändert",new:"Neu strukturiert",mod:"Modifiziert",split:"Aufgelöst/Integriert"}[c]||c;}
+function badgeHtml(chg){
+  if(chg==="new")return'<span class="icd-badge-new">Neu</span>';
+  if(chg==="mod")return'<span class="icd-badge-mod">Mod.</span>';
+  if(chg==="split")return'<span class="icd-badge-split">Integriert</span>';
+  return"";
+}
+
+function buildChips(){
+  var chs=[...new Set(D.map(function(d){return d.ch;}))];
+  var el=document.getElementById("chips");
+  el.innerHTML='<button class="chip active" onclick="fltCh(\'all\',this)">Alle</button>';
+  chs.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="chip";b.textContent=c;
+    b.onclick=function(){fltCh(c,b);};
+    el.appendChild(b);
+  });
+}
+function fltCh(c,btn){
+  ach=c;
+  document.querySelectorAll("#chips .chip").forEach(function(x){x.classList.remove("active");});
+  btn.classList.add("active");
+  renderDiagnosen();
+}
+function togSort(){sAZ=!sAZ;renderDiagnosen();}
+
+function renderDiagnosen(){
+  var q=document.getElementById("si").value.toLowerCase().trim();
+  var data=D.filter(function(d){
+    if(ach!=="all"&&d.ch!==ach)return false;
+    if(!q)return true;
+    return d.c10.toLowerCase().indexOf(q)>=0||d.c11.toLowerCase().indexOf(q)>=0||
+           d.de.toLowerCase().indexOf(q)>=0||d.en.toLowerCase().indexOf(q)>=0||
+           (d.sy&&d.sy.some(function(s){return s.toLowerCase().indexOf(q)>=0;}));
+  });
+  if(sAZ)data.sort(function(a,b){return a.c10.localeCompare(b.c10);});
+  else data.sort(function(a,b){return a.de.localeCompare(b.de);});
+  document.getElementById("rc").textContent=data.length+" Diagnose"+(data.length!==1?"n":"")+" gefunden";
+  var el=document.getElementById("dl");
+  if(!data.length){el.innerHTML='<div class="es"><div class="ei">○</div><div style="font-size:.88rem;font-weight:600">Keine Treffer</div></div>';return;}
+  el.innerHTML=data.map(function(d){
+    var ex=exId===d.c10;
+    var sy=d.sy&&d.sy.length?'<div class="ss"><div class="stit">Leitsymptome</div>'+d.sy.map(function(s){return'<span class="stag">'+s+"</span>";}).join("")+"</div>":"";
+    var cv=d.chg!=="same"?'<div class="cv"><div class="cvt">Veränderung ICD-11</div><div class="cvc">'+d.cn+"</div></div>":"";
+    return'<div class="dc'+(ex?" ex":"")+'" onclick="togCard(\''+d.c10+'\')">'
+      +'<div class="ch2"><div class="cb"><span class="cbd b10">'+hl(d.c10,q)+'</span><span class="cbd b11">'+hl(d.c11,q)+"</span></div>"
+      +'<div class="cc"><div class="ct">'+hl(d.de,q)+'</div><div class="cte">'+hl(d.en,q)+'</div><div class="cch"><span class="cdot"></span>'+d.chn+"</div></div>"
+      +'<span class="ca">⇕</span></div>'
+      +'<div class="cdet"><div class="dg">'
+      +'<div class="db d10"><div class="dbt">ICD-10</div><div class="dr"><span class="dk">Code</span><span class="dv">'+d.c10+"</span></div><div class=\"dr\"><span class=\"dk\">Kapitel</span><span class=\"dv\">"+d.ch+" – "+d.chn+"</span></div></div>"
+      +'<div class="db d11"><div class="dbt">ICD-11</div><div class="dr"><span class="dk">Code</span><span class="dv">'+d.c11+"</span></div><div class=\"dr\"><span class=\"dk\">Status</span><span class=\"dv\">"+lbl(d.chg)+"</span></div></div></div>"
+      +'<div class="ma"><span class="mai">'+d.c10+" → "+d.c11+'</span><span style="color:var(--tm)">'+d.cn+"</span></div>"
+      +sy+cv+"</div></div>";
+  }).join("");
+}
+function togCard(c10){exId=exId===c10?null:c10;renderDiagnosen();}
+
+function buildIcdCats(){
+  var cats=[...new Set(D.map(function(d){return d.chn;}))];
+  var el=document.getElementById("icd-cats");
+  el.innerHTML='<button class="icd-cat-btn on" onclick="setIcdCat(\'all\',this)">Alle</button>';
+  cats.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="icd-cat-btn";b.textContent=c;
+    b.onclick=function(){setIcdCat(c,b);};
+    el.appendChild(b);
+  });
+}
+function setIcdCat(c,btn){
+  icdCat=c;
+  document.querySelectorAll(".icd-cat-btn").forEach(function(x){x.classList.remove("on");});
+  btn.classList.add("on");
+  renderIcdCards();
+}
+function setIcdVer(v,btn){
+  icdVer=v;
+  document.getElementById("vb10").classList.toggle("on",v===10);
+  document.getElementById("vb11").classList.toggle("on",v===11);
+  renderIcdCards();
+}
+
+function renderIcdCards(){
+  var q="";
+  try{q=(document.getElementById("ics").value||"").toLowerCase().trim();}catch(e){}
+  var data=D.filter(function(d){
+    if(icdCat!=="all"&&d.chn!==icdCat)return false;
+    if(!q)return true;
+    var code=icdVer===10?d.c10:d.c11;
+    return code.toLowerCase().indexOf(q)>=0||d.de.toLowerCase().indexOf(q)>=0||d.en.toLowerCase().indexOf(q)>=0||
+           (d.sy&&d.sy.some(function(s){return s.toLowerCase().indexOf(q)>=0;}));
+  });
+  data.sort(function(a,b){
+    var ca=icdVer===10?a.c10:a.c11,cb=icdVer===10?b.c10:b.c11;
+    return ca.localeCompare(cb);
+  });
+  document.getElementById("icd-rc").textContent=data.length+" Einträge ("+(icdVer===10?"ICD-10":"ICD-11")+")";
+  var el=document.getElementById("icd-grid");
+  if(!data.length){el.innerHTML='<div class="es" style="grid-column:1/-1"><div class="ei">○</div><div style="font-size:.88rem;font-weight:600">Keine Treffer</div></div>';return;}
+  el.innerHTML=data.map(function(d){
+    var code=icdVer===10?d.c10:d.c11;
+    var isOpen=openIcdId===code;
+    var otherVer=icdVer===10?11:10;
+    var otherCode=icdVer===10?d.c11:d.c10;
+    var otherLabel=icdVer===10?"ICD-11: "+d.c11:"ICD-10: "+d.c10;
+    var syHtml=d.sy&&d.sy.length?'<div class="icd-detail-tags">'+d.sy.map(function(s){return'<span class="icd-detail-tag'+(icdVer===11?" v11":"")+'">'+s+"</span>";}).join("")+"</div>":"";
+    return'<div class="icd-card'+(isOpen?" open":"")+'" id="ic_'+code.replace(/\./g,"_")+'" onclick="togIcdCard(\''+code+'\')">'
+      +'<div class="icd-code'+(icdVer===11?" v11":"")+'">'+hl(code,q)+badgeHtml(d.chg)+"</div>"
+      +'<div class="icd-name">'+hl(d.de,q)+"</div>"
+      +'<span class="icd-cat-badge">'+d.chn+"</span>"
+      +'<div class="icd-details">'
+      +'<div class="icd-detail-row"><strong>EN:</strong> '+d.en+"</div>"
+      +(icdVer===10?'<div class="icd-detail-row"><strong>ICD-11:</strong> '+d.c11+"</div>":'<div class="icd-detail-row"><strong>ICD-10:</strong> '+d.c10+"</div>")
+      +'<div class="icd-detail-row"><strong>Status:</strong> '+lbl(d.chg)+"</div>"
+      +'<div class="icd-detail-row">'+d.cn+"</div>"
+      +syHtml
+      +'<span class="icd-jump'+(icdVer===11?" v11":"")+'" onclick="jumpToVersion('+otherVer+',\''+otherCode+'\');event.stopPropagation()">⇆ '+otherLabel+"</span>"
+      +"</div></div>";
+  }).join("");
+}
+function togIcdCard(code){openIcdId=openIcdId===code?null:code;renderIcdCards();}
+function jumpToVersion(v,code){
+  setIcdVer(v,document.getElementById(v===10?"vb10":"vb11"));
+  openIcdId=code;renderIcdCards();
+  setTimeout(function(){
+    var el=document.getElementById("ic_"+code.replace(/\./g,"_"));
+    if(el)el.scrollIntoView({behavior:"smooth",block:"center"});
+  },120);
+}
+
+function renderMapping(){
+  var b=document.getElementById("mb");
+  [].concat(D).sort(function(a,b){return a.c10.localeCompare(b.c10);}).forEach(function(d){
+    var tr=document.createElement("tr");
+    tr.innerHTML='<td class="tc t10">'+d.c10+'</td><td class="tc t11">'+d.c11+'</td><td>'+d.de+'</td><td><span class="cp c'+d.chg+'">'+lbl(d.chg)+"</span></td>";
+    b.appendChild(tr);
+  });
+}
+
+function renderStatistik(){
+  var cc={},cn={},rng={F0:"F00–F09",F1:"F10–F19",F2:"F20–F29",F3:"F30–F39",F4:"F40–F48",F5:"F50–F59",F6:"F60–F69",F7:"F70–F79",F8:"F80–F89",F9:"F90–F99"};
+  D.forEach(function(d){cc[d.ch]=(cc[d.ch]||0)+1;cn[d.ch]=d.chn;});
+  var tot=D.length,chgN=D.filter(function(d){return d.chg!=="same";}).length,chs=Object.keys(cc).length,nw=D.filter(function(d){return d.chg==="new";}).length;
+  document.getElementById("sg").innerHTML=
+    '<div class="sc"><div class="sn">'+tot+'</div><div class="sl">Diagnosen gesamt</div></div>'
+    +'<div class="sc"><div class="sn">'+chs+'</div><div class="sl">Kapitel</div></div>'
+    +'<div class="sc"><div class="sn">'+chgN+'</div><div class="sl">Geändert in ICD-11</div></div>'
+    +'<div class="sc"><div class="sn">'+nw+'</div><div class="sl">Neu strukturiert</div></div>';
+  document.getElementById("chl").innerHTML=Object.keys(cc).sort().map(function(c){
+    return'<div class="ci"><div class="cn2">'+c+'</div><div class="cinfo"><div class="cname">'+cn[c]+'</div><div class="crange">'+(rng[c]||"")+'</div></div><div class="ccount">'+cc[c]+'<small>Diagnosen</small></div></div>';
+  }).join("");
+}
+
+window.addEventListener("scroll",function(){
+  document.getElementById("stb").classList.toggle("vis",window.scrollY>280);
+});
+
+init();
+</script>
+<p class="verif">ICD Browser v2.3 · WHO ICD-11 MMS 2024 · BfArM ICD-10-GM 2024 · 120 Diagnosen</p>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>
